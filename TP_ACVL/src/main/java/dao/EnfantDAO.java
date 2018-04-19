@@ -46,6 +46,29 @@ public class EnfantDAO extends AbstractDataBaseDAO{
 	return result;
     }
     
+     public List<Enfant> getListEnfantsOfFamily(int id_family) {
+        List<Enfant> result = new ArrayList<Enfant>();
+        try (
+	     Connection conn = getConn();
+             PreparedStatement st = conn.prepareStatement(
+                "SELECT * FROM enfants WHERE id_family = ?");
+             ) {
+            st.setInt(1, id_family);
+            ResultSet rs = st.executeQuery();
+                                   
+            while (rs.next()) {
+                                          
+                Enfant enfant =
+                    new Enfant(rs.getInt("id"), rs.getInt("id_family"), rs.getString("name"), rs.getString("surname"), 
+                            rs.getString("gender"), rs.getString("date_of_birth"), rs.getInt("id_regime"), rs.getInt("level_id"), rs.getInt("id_period") );
+                result.add(enfant);
+            }
+        } catch (SQLException e) {
+            throw new DAOException("Erreur BD " + e.getMessage(), e);
+	}
+	return result;
+    }
+    
     
     
     public void addEnfant(int id_family, String name, 

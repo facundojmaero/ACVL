@@ -34,13 +34,42 @@ public class ActivityListDAO extends AbstractDataBaseDAO{
         super(ds);
     }
     
+    
+    // -1 si es lista completa, id si es para listar actividades 
      public List<ActivityList> getListActivityLists() {
 	 List<ActivityList> result = new ArrayList<ActivityList>();
         try (
 	     Connection conn = getConn();
 	     Statement st = conn.createStatement();
 	     ) {
+
             ResultSet rs = st.executeQuery("SELECT * FROM activity_list");
+            
+            while (rs.next()) {
+                                             
+                ActivityList act_list =  new ActivityList( rs.getInt("id"), rs.getInt("id_day"), rs.getInt("id_activity"), rs.getString("hour"), 
+                        rs.getInt("student_quota"),rs.getInt("duration"), rs.getInt("id_animator"), rs.getInt("level_id") );
+                result.add(act_list);
+            }
+        } catch (SQLException e) {
+            throw new DAOException("Erreur BD " + e.getMessage(), e);
+	}
+	return result;
+    }
+     
+     
+     
+     
+     
+     public List<ActivityList> getListActivityListsOfAnimator(int id_animator) {
+	 List<ActivityList> result = new ArrayList<ActivityList>();
+        try (
+	     Connection conn = getConn();
+	      PreparedStatement st = conn.prepareStatement("SELECT * FROM activity_list WHERE id_animator = ?");
+	     ) {
+             st.setInt(1, id_animator);
+            ResultSet rs = st.executeQuery();
+                    
             while (rs.next()) {
                                              
                 ActivityList act_list =  new ActivityList( rs.getInt("id"), rs.getInt("id_day"), rs.getInt("id_activity"), rs.getString("hour"), 

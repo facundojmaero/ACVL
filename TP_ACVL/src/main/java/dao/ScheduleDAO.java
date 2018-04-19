@@ -49,6 +49,26 @@ public class ScheduleDAO extends AbstractDataBaseDAO{
     }
     
     
+     public List<Schedule> getListSchedulesOfEnfant() {
+	 List<Schedule> result = new ArrayList<Schedule>();
+        try (
+	     Connection conn = getConn();
+	     Statement st = conn.createStatement();
+	     ) {
+            ResultSet rs = st.executeQuery("SELECT * FROM schedule_activity_enfant");
+            while (rs.next()) {
+                                             
+                Schedule schedule =
+                    new Schedule(rs.getInt("id"), rs.getInt("id_enfant"), rs.getString("attendance"), rs.getInt("id_timetable_activity"));
+                result.add(schedule);
+            }
+        } catch (SQLException e) {
+            throw new DAOException("Erreur BD " + e.getMessage(), e);
+	}
+	return result;
+    }
+    
+    
     public void addSchedule(int id_enfant, String attendance, int id_timetable_activity){
 
         try (

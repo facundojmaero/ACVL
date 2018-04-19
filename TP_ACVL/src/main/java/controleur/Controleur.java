@@ -11,6 +11,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import javax.sql.DataSource;
 import modele.Ouvrage;
+import dao.AccountDAO;
+import modele.Account;
 
 /**
  * Le contrôleur de l'application.
@@ -43,6 +45,18 @@ public class Controleur extends HttpServlet {
             throws IOException, ServletException {
 
         request.setCharacterEncoding("UTF-8");
+        
+         HttpSession session = request.getSession();
+         String username = (String) session.getAttribute("username");
+         
+         if (username != null) {
+                 
+          } else {
+             response.sendRedirect("WEB-INF/login.jsp");
+            }
+        
+        
+        
         String action = request.getParameter("action");
         OuvrageDAO ouvrageDAO = new OuvrageDAO(ds);
 
@@ -79,6 +93,9 @@ public class Controleur extends HttpServlet {
 //        request.getRequestDispatcher("/WEB-INF/listAll.jsp").forward(request, response);
         System.err.println(ouvrages);
     }
+    
+    
+          
 
     /**
      * 
@@ -124,9 +141,32 @@ public class Controleur extends HttpServlet {
             return;
         }
         OuvrageDAO ouvrageDAO = new OuvrageDAO(ds);
+         AccountDAO accountDAO = new AccountDAO(ds);
 
-        try {
-            if (action.equals("ajouter")) {
+        try{
+            
+             if(action.equals("login")){
+                 switch (ValidateLogin(request, response, accountDAO)) {
+                 
+                     case 1:
+                         //  mostrar vista familia
+                         request.getRequestDispatcher("/WEB-INF/family.jsp").forward(request, response);
+                         break;
+                
+                     case 2:
+                          // mostrar vista admin
+                         request.getRequestDispatcher("/WEB-INF/admin.jsp").forward(request, response);
+                         break;
+                 
+                     case 0:
+                         // mostrar vista error login
+                         request.getRequestDispatcher("/WEB-INF/loginError.jsp").forward(request, response);
+                         
+                     default:
+                         break;
+                 }
+             }
+              else if (action.equals("ajouter")) {
                 actionAjouter(request, response, ouvrageDAO);
             } else if (action.equals("supprimer")) {
                 actionSupprimer(request, response, ouvrageDAO);
@@ -143,6 +183,45 @@ public class Controleur extends HttpServlet {
             erreurBD(request, response, e);
         }
     }
+    
+    /**
+     * ValidateLogin : Valida login y guarda datos en la sesion.
+     */
+      
+       private int ValidateLogin(HttpServletRequest request,
+            HttpServletResponse response,
+            AccountDAO accountDAO) throws ServletException, IOException {
+
+            List<Account> accounts = accountDAO.getListAccounts();          
+            
+            int login = 0; 
+             
+            for (Account account : accounts) {         
+               if (account.getUsername().equals(request.getParameter("user")) && account.getPassword().equals(request.getParameter("password"))){      
+                    login = 1; 
+                    
+                     HttpSession session = request.getSession();
+                     session.setAttribute("username", request.getParameter("user"));
+                     session.setAttribute("account_type", request.getParameter("account_type")); 
+                     
+                   if(account.getAccount_type().equals("admin")){
+                       login = 2;  
+                          }
+                   }
+               }
+                      
+            return login;          
+        }
+       
+       private void Logout(HttpServletRequest request,
+            HttpServletResponse response,
+            AccountDAO accountDAO) throws ServletException, IOException {
+           
+                     HttpSession session = request.getSession();
+                     session.invalidate();
+       
+       }
+       
     
     /**
      * Ajout d'un ouvrage.

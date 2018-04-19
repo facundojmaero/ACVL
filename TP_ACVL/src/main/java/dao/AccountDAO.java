@@ -26,6 +26,7 @@ public class AccountDAO extends AbstractDataBaseDAO{
     }
     
      public List<Account> getListAccounts() {
+         
 	 List<Account> result = new ArrayList<Account>();
         try (
 	     Connection conn = getConn();
